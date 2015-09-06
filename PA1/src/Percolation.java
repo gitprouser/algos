@@ -1,5 +1,5 @@
 /**
- * Created by dgayash on 9/6/15.
+ * Created on 9/6/15.
  */
 public class Percolation {
     public Percolation(int N) {
