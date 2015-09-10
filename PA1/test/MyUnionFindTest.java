@@ -3,7 +3,7 @@
  */
 public class MyUnionFindTest {
     public static void main(String[] args) {
-//        testNumbers();
+        testNumbers();
         testQuiz();
     }
 
@@ -21,7 +21,7 @@ public class MyUnionFindTest {
         System.out.println("Number of Connected Groups: " + unionFind.count());
     }
 
-    static void testNumbers(){
+    static void testNumbers() {
         MyUnionFind unionFind = new MyUnionFind(10);
         unionFind.union(4, 3);
         unionFind.union(3, 8);

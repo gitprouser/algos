@@ -1,8 +1,6 @@
 import edu.princeton.cs.algs4.SET;
 
-/**
- * Created on 9/6/15.
- */
+
 public class MyUnionFind {
 
     int[] arr;

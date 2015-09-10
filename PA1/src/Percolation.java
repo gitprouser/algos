@@ -3,13 +3,17 @@
  */
 public class Percolation {
     public Percolation(int N) {
-
     }
 
     public void open(int i, int j) {
-
     }
 
+    /**
+     * 
+     * @param i
+     * @param j
+     * @return
+     */
     public boolean isOpen(int i, int j) {
         return false;
     }
