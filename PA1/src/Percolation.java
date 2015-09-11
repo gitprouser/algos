@@ -7,12 +7,11 @@ public class Percolation {
 
     private static final int BLOCKED = 0;
     private static final int OPEN = 1;
-    private static final int TOP_OF_SITE_PERCOLATOR = Integer.MAX_VALUE;
-    private static final int BOTTOM_OF_SITE_PERCOLATOR = Integer.MIN_VALUE;
 
+    private Site topOFSitePercolator = new Site(-1, -1);
 
     private int N;
-
+    private static final int TOP = 0, LEFT = 1, RIGHT = 2, BOTTOM = 3;
 
     private int[][] sites;
     WeightedQuickUnionUF weightedQuickUnionUF;
@@ -28,8 +27,8 @@ public class Percolation {
             throw new IllegalArgumentException("N <= 0");
         }
         this.N = N;
-        this.sites = new int[N - 1][N - 1];
-        weightedQuickUnionUF = new WeightedQuickUnionUF((N - 1) * (N - 1));
+        this.sites = new int[N][N];
+        weightedQuickUnionUF = new WeightedQuickUnionUF(((N) * (N)) + 1);
     }
 
     /**
@@ -44,8 +43,11 @@ public class Percolation {
             sites[site.row][site.col] = OPEN;
         }
 
-        for (Site neighbour : site.getNeighbours())
-            weightedQuickUnionUF.connected(neighbour.convert2dto1dPosition(), site.convert2dto1dPosition());
+        for (Site neighbour : site.getNeighbors()) {
+            if(neighbour != null && isOpen(neighbour)) {
+                weightedQuickUnionUF.union(site.convert2dto1dPosition(), neighbour.convert2dto1dPosition());
+            }
+        }
     }
 
     /**
@@ -56,8 +58,11 @@ public class Percolation {
      * @return
      */
     public boolean isOpen(int row, int col) {
-        Site site = new Site(row, col);
-        return (sites[site.row][site.col] == OPEN);
+        return isOpen(new Site(row, col));
+    }
+
+    private boolean isOpen(Site site) {
+        return site.isSentinealNode()? true : (sites[site.row][site.col] == OPEN) ;
     }
 
     /**
@@ -68,7 +73,11 @@ public class Percolation {
      * @return
      */
     public boolean isFull(int row, int col) {
-        throw new UnsupportedOperationException("TO BE IMPLEMENTED");
+        if (isOpen(row, col)) {
+            return weightedQuickUnionUF.connected(new Site(row, col).convert2dto1dPosition(),
+                    topOFSitePercolator.convert2dto1dPosition());
+        }
+        return false;
     }
 
     /**
@@ -77,7 +86,12 @@ public class Percolation {
      * @return boolean true means percolates false means no percolation
      */
     public boolean percolates() {
-        throw new UnsupportedOperationException("TO BE IMPLEMENTED");
+        for(int i = 1; i <= N; i++) {
+            if (isOpen(N, i)) {
+                return weightedQuickUnionUF.connected(new Site(N, i).convert2dto1dPosition(),
+                                                      topOFSitePercolator.convert2dto1dPosition());
+            }
+        } return false;
     }
 
     Site createSiteCoordinate(int row, int col) {
@@ -92,6 +106,11 @@ public class Percolation {
         int row, col;
 
         Site(int row, int col) {
+            if (row == -1 && col == -1) {
+                this.row = row;
+                this.col = col;
+                return;
+            }
             validateRowsAndCols(row, col);
             this.row = row - 1;
             this.col = col - 1;
@@ -100,57 +119,51 @@ public class Percolation {
         }
 
         private void validateRowsAndCols(int row, int col) throws IndexOutOfBoundsException {
-            if (row < 1 || row > N) {
-                if (isDebugEnabled) {
-                    if (row < 1)
-                        StdOut.println("row is underbounds " + this.row);
-                    else
-                        StdOut.println("Row is overbounds " + this.row);
-                }
+            if (row < 1 || row > N)
                 throw new IndexOutOfBoundsException("The row number provided is outside the range 1 to " + N);
-            }
 
-            if (col < 1 || col > N) {
-                if (isDebugEnabled) {
-                    if (col < 1)
-                        StdOut.println("Col is underbounds " + this.col);
-                    else
-                        StdOut.println("Col is overbounds " + this.col);
-                }
+            if (col < 1 || col > N)
                 throw new IndexOutOfBoundsException("The col number provided is outside the range 1 to " + N);
-            }
         }
 
         int convert2dto1dPosition() {
-            int oneD = (this.row * N) + this.col;
-            if (isDebugEnabled)
-                StdOut.println(this + " Convert 2d to 1d => '" + oneD + "'");
-            return oneD;
+            if (row == -1 && col == -1)  // The sentinial node
+                return N * N;
+
+            return (this.row * N) + this.col;
+        }
+
+        int getRow() {
+            return this.row + 1;
+        }
+
+        int getCol() {
+            return this.col + 1;
         }
 
         public String toString() {
             return "Site coordinates (" + this.row + ", " + this.col + ")";
         }
 
-        Site[] getNeighbours() {
-            if (row == 0 && col == 0) { // Site is at the corners
-                return null;
-            } else if (row == 0) {      // Site is right at the top
-                return null;
-            } else if (col == 0) {      // Site is at the left edge
-                return null;
-            } else if (col == N - 1) {  // Site is at the right edge
-                return null;
-            } else if (row == N - 1) {  // Site is at the bottom
-                return null;
-            } else {
-                Site[] neighbours = new Site[4];
-                neighbours[0] = new Site(this.row - 1, this.col);
-                neighbours[1] = new Site(this.row, this.col - 1);
-                neighbours[2] = new Site(this.row, this.col + 1);
-                neighbours[3] = new Site(this.row + 1, this.col);
-                return neighbours;
-            }
+        Site[] getNeighbors() {
+            int baseOneOffset = 1;
+            Site[] neighbors = new Site[4];
+
+            if (row > 0)
+                neighbors[TOP] = new Site(this.row - 1 + baseOneOffset, this.col + baseOneOffset);
+            if (col > 0)
+                neighbors[LEFT] = new Site(this.row + baseOneOffset, this.col - 1 + baseOneOffset);
+            if (row < N - 1)
+                neighbors[BOTTOM] = new Site(this.row + 1 + baseOneOffset, this.col + baseOneOffset);
+            if (col < N - 1)
+                neighbors[RIGHT] = new Site(this.row + baseOneOffset, this.col + 1 + baseOneOffset);
+            if (row == 0)
+                neighbors[TOP] = topOFSitePercolator;
+
+            return neighbors;
+        }
+        boolean isSentinealNode() {
+            return (this.row == -1 && this.col == -1);
         }
     }
 }
