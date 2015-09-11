@@ -133,14 +133,6 @@ public class Percolation {
             return (this.row * N) + this.col;
         }
 
-        int getRow() {
-            return this.row + 1;
-        }
-
-        int getCol() {
-            return this.col + 1;
-        }
-
         public String toString() {
             return "Site coordinates (" + this.row + ", " + this.col + ")";
         }
