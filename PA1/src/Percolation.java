@@ -7,15 +7,14 @@ public class Percolation {
 
     private static final int BLOCKED = 0;
     private static final int OPEN = 1;
-
-    private Site topOFSitePercolator = new Site(-1, -1);
-
-    private int N;
     private static final int TOP = 0, LEFT = 1, RIGHT = 2, BOTTOM = 3;
+    private int N;
 
     private int[][] sites;
     WeightedQuickUnionUF weightedQuickUnionUF;
+
     private boolean isDebugEnabled;
+    private Site topOFSitePercolator = new Site(-1, -1);
 
     /**
      * Create N-by-N grid, with all sites blocked.
@@ -28,7 +27,7 @@ public class Percolation {
         }
         this.N = N;
         this.sites = new int[N][N];
-        weightedQuickUnionUF = new WeightedQuickUnionUF(((N) * (N)) + 1);
+        weightedQuickUnionUF = new WeightedQuickUnionUF((N * N) + 1);
     }
 
     /**
@@ -44,7 +43,7 @@ public class Percolation {
         }
 
         for (Site neighbour : site.getNeighbors()) {
-            if(neighbour != null && isOpen(neighbour)) {
+            if(neighbour != null && __isOpen(neighbour)) {
                 weightedQuickUnionUF.union(site.convert2dto1dPosition(), neighbour.convert2dto1dPosition());
             }
         }
@@ -58,11 +57,11 @@ public class Percolation {
      * @return
      */
     public boolean isOpen(int row, int col) {
-        return isOpen(new Site(row, col));
+        return __isOpen(new Site(row, col));
     }
 
-    private boolean isOpen(Site site) {
-        return site.isSentinealNode()? true : (sites[site.row][site.col] == OPEN) ;
+    private boolean __isOpen(Site site) {
+        return site.isSentinalNode()? true : (sites[site.row][site.col] == OPEN) ;
     }
 
     /**
@@ -74,8 +73,7 @@ public class Percolation {
      */
     public boolean isFull(int row, int col) {
         if (isOpen(row, col)) {
-            return weightedQuickUnionUF.connected(new Site(row, col).convert2dto1dPosition(),
-                    topOFSitePercolator.convert2dto1dPosition());
+            return weightedQuickUnionUF.connected(new Site(row, col).convert2dto1dPosition(), topOFSitePercolator.convert2dto1dPosition());
         }
         return false;
     }
@@ -88,8 +86,7 @@ public class Percolation {
     public boolean percolates() {
         for(int i = 1; i <= N; i++) {
             if (isOpen(N, i)) {
-                return weightedQuickUnionUF.connected(new Site(N, i).convert2dto1dPosition(),
-                                                      topOFSitePercolator.convert2dto1dPosition());
+                return weightedQuickUnionUF.connected(new Site(N, i).convert2dto1dPosition(), topOFSitePercolator.convert2dto1dPosition());
             }
         } return false;
     }
@@ -106,7 +103,7 @@ public class Percolation {
         int row, col;
 
         Site(int row, int col) {
-            if (row == -1 && col == -1) {
+            if (row == -1 && col == -1) {   // isSentinial node
                 this.row = row;
                 this.col = col;
                 return;
@@ -154,7 +151,7 @@ public class Percolation {
 
             return neighbors;
         }
-        boolean isSentinealNode() {
+        boolean isSentinalNode() {
             return (this.row == -1 && this.col == -1);
         }
     }
